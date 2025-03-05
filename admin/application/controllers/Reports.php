@@ -1061,5 +1061,129 @@ class Reports extends CI_Controller {
         echo json_encode($result);
         exit;
     }
+
+    // Razorpay Reports View Page
+    public function view_razorpay() {
+        $pageconfig = pageConfig('staff', 'users');
+        $page_start = ($this->input->get('per_page')) ? $this->input->get('per_page') : 0;
+        $sales_record = [];
+        $data = [
+            'info'          => checkLogin(),
+            'wishes'        => GetWishes(),
+            'cmpy_info'     => getSettingData(),
+            'content'       => 'reports/razorpay_report',
+            'sales_records' => $sales_record,
+        ];
+        $this->load->view('template', $data);
+    }
+    public function getrazorpayDatas() {
+        $datefilter     = $this->input->post('datefilter', TRUE);
+        $limit          = $this->input->post('length', TRUE);
+        $start          = $this->input->post('start', TRUE);
+        $search         = $this->input->post('search', TRUE)['value'];
+        $orderField     = $this->input->post('columns', TRUE)[$this->input->post('order', TRUE)[0]['column']]['data'];
+        $orderDirection = $this->input->post("order", TRUE)[0]["dir"];
+        $searchColumns = $this->input->post('search_columns', TRUE);
+        $totalItems    = 0;
+        $col_where = ['A.fld_atype'  => NULL];
+        $col_where = ['P.fld_phistory'  => '"Online"'];
+        if (! empty($searchColumns)) {
+            foreach ($searchColumns as $columnIndex => $searchValue) {
+                $searchValue = trim($searchValue);
+                if (! empty($searchValue)) {
+                    switch ($columnIndex) {
+                    case 1:
+                        $col_where["DATE_FORMAT(A.fld_booked_date, '%d/%m/%Y') LIKE"] = "%$searchValue%";
+                        break;
+                    case 2:
+                        $col_where["DATE_FORMAT(P.fld_pdate, '%d/%m/%Y') LIKE"] = "%$searchValue%";
+                        break;
+                    case 3:
+                        $col_where["A.fld_appointid LIKE"] = "%$searchValue%";
+                        break;
+                    case 4:
+                        $col_where["C.fld_name LIKE"] = "%$searchValue%";
+                        break;
+                    case 5:
+                        $col_where["C.fld_phone LIKE"] = "%$searchValue%";
+                        break;
+                    case 6:
+                        $col_where["P.fld_pamt LIKE"] = "%$searchValue%";
+                        break;
+                    case 7:
+                        $col_where["A.fld_payment_id LIKE"] = "%$searchValue%";
+                        break;
+                    case 8:
+                        $payHistory = str_replace('', '"', $searchValue);
+                        $col_where["P.fld_phistory LIKE"] = "%$payHistory%";
+                        break;
+                    case 9:
+                        $col_where["A.fld_apaystatus LIKE"] = "%$searchValue%";
+                        break;
+                    case 10:
+                        $col_where["A.fld_astatus LIKE"] = "%$searchValue%";
+                        break;
+                    }
+                }
+            }
+        }
+        $dateWhere = [];
+        if (! empty($datefilter)) {
+            $split       = explode(" to ", $datefilter);
+            $startfilter = struDate($split[0]);
+            $endfilter   = struDate($split[1]);
+            $startfilter = $startfilter . " 00:00:00";
+            $endfilter   = $endfilter . " 23:59:59";
+            $dateWhere = [
+                'P.fld_pdate >=' => $startfilter,
+                'P.fld_pdate <=' => $endfilter,
+            ];
+        }
+        $where = array_merge($col_where, $dateWhere);
+        $table1     = 'appointments A';
+        $table2     = 'customers C';
+        $table3     = 'payments P'; 
+        $table1cond = '`A`.`fld_acustid` = `C`.`fld_id`';
+        $table2cond = '`P`.`fld_appid` = `A`.`fld_aid`'; 
+        $select     = "A.*, C.*, P.*";                  
+        // Get the total items
+        $total = $this->Common_model->GetJoinDatasThreeTableRazorpay($table1, $table2, $table3, $table1cond, $table2cond, $select, $where);
+        $totalItems = count($total);
+        $table1     = 'appointments A';
+        $table2     = 'customers C';
+        $table3     = 'payments P';
+        $table1cond = '`A`.`fld_acustid` = `C`.`fld_id`';
+        $table2cond = '`P`.`fld_appid` = `A`.`fld_aid`';
+        $select     = "A.*, C.*, P.*";
+        $items = $this->Common_model->getRazorpay($table1, $table2, $table3, $table1cond, $table2cond, $select, $orderField . ' ' . $orderDirection, $limit, $start, $search, $where);
+        $data = [];
+        $i    = (float) $start + 1;
+        foreach ($items as $item) { 
+            $booking_date = date('d/m/Y', strtotime($item['fld_booked_date']));
+            $payment_date = date('d/m/Y', strtotime($item['fld_pdate']));
+            $courtname    = (($item['fld_aserv'] == 'courtA') ? 'Court A' : 'Court B');
+            $data[]       = [
+                "fld_aid"         => $i,
+                "fld_bookingdate" => $booking_date,
+                "fld_pdate"       => $payment_date,
+                "fld_appointid"   => $item['fld_appointid'],
+                "fld_name"        => $item['fld_name'],
+                "fld_phone"       => $item['fld_phone'],
+                "fld_pamt"  => !empty($item['fld_pamt']) ? $item['fld_pamt'] : "0.00",
+                "fld_payment_id"  => !empty($item['fld_payment_id']) ? $item['fld_payment_id'] : "",
+                "fld_phistory"    => $item['fld_phistory'] = str_replace('"', "", $item['fld_phistory']),
+                "fld_apaystatus"  => !empty($item['fld_apaystatus']) ? $item['fld_apaystatus'] : "",
+                "fld_astatus"  => !empty($item['fld_astatus']) ? $item['fld_astatus'] : "",
+            ];
+            $i++;
+        }
+        $response = [
+            "draw"            => ! empty($this->input->post('draw', TRUE)) ? $this->input->post('draw', TRUE) : 1,
+            "recordsTotal"    => $totalItems,
+            "recordsFiltered" => $totalItems,
+            "data"            => $data,
+        ];
+        echo json_encode($response);
+    }
     public function __destruct() {}
 }

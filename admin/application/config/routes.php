@@ -92,6 +92,8 @@ $route['showday_closeview'] = 'reports/showday_closeview';
 $route['view_maintenance'] = 'reports/view_maintenance';
 $route['view_maintenance/(:any)'] = 'reports/view_maintenance/$1';
 $route['getcourtMaintenanceDatas'] = 'reports/getcourtMaintenanceDatas';
+$route['view_razorpay'] = 'reports/view_razorpay';
+$route['getrazorpayDatas'] = 'reports/getrazorpayDatas';
 
 
 $route['pdf_generate'] = 'pdf/pdf_generate';
