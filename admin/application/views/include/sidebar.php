@@ -338,6 +338,10 @@
                         <li class="slide">
                             <a href="<?= base_url('view_maintenance'); ?>" class="side-menu__item">Court Maintenance</a>
                         </li>
+
+                        <li class="slide">
+                            <a href="<?= base_url('view_razorpay'); ?>" class="side-menu__item">Razorpay</a>
+                        </li>
                     </ul>
                 </li>
 

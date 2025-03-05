@@ -51,6 +51,7 @@ class Common_model extends CI_Model {
         }
         return $query->get()->result_array();
     }
+
     public function GetJoinDatasThreeTable($table1, $table2, $table3, $joincond1, $joincond2, $select, $where = NULL, $wherein = NULL, $groupby = NULL,$whereNotIn = NULL) {
 		$query = $this->db->select($select)->from($table1);
 		$query->join($table2, $joincond1);
@@ -65,6 +66,7 @@ class Common_model extends CI_Model {
         }
 		return $query->get()->result_array();
     }
+
    public function getCount($table, $where = NULL, $search = NULL, $select = "*", $col_where = NULL ) {
         $query = $this->db->select($select)->from($table);
         (!empty($where)) ? $query->where($where) : $query;
@@ -173,6 +175,36 @@ class Common_model extends CI_Model {
         $this->db->limit($limit, $start);
         if (!empty($orderby)) { $this->db->order_by($orderby); }
         return $this->db->get()->result_array();
+    }
+    public function getRazorpay($table1, $table2, $table3, $table1cond, $table2cond, $select, $orderby, $limit, $start, $search = '', $where = NULL,$whereNotIn = NULL) {
+        $this->db->select($select)->from($table1)->join($table2, $table1cond, 'left')->join($table3, $table2cond, 'left');
+        if (!empty(trim($search))) {
+        	$search = trim($search);
+            $this->db->group_start();
+            $columns = ['DATE_FORMAT(A.fld_booked_date, "%d/%m/%Y")', 'DATE_FORMAT(P.fld_pdate, "%d/%m/%Y")', 'A.fld_appointid', 'C.fld_name', 'C.fld_phone', 'P.fld_pamt', 'A.fld_payment_id', 'P.fld_phistory','A.fld_apaystatus','A.fld_astatus'];
+            foreach ($columns as $column) {
+                $this->db->or_like($column, $search);
+            }
+            $this->db->group_end();
+        }
+        if(!empty($where)) { $this->db->where($where); }
+        if (! empty($whereNotIn)) {
+		foreach ($whereNotIn as $column => $values) {
+			$query->where_not_in($column, $values);
+		}
+        }
+        $this->db->limit($limit, $start);
+        if (!empty($orderby)) { $this->db->order_by($orderby); }
+        return $this->db->get()->result_array();
+    }
+    public function GetJoinDatasThreeTableRazorpay($table1, $table2, $table3, $joincond1, $joincond2, $select, $where = NULL, $groupby = NULL) {
+		$query = $this->db->select($select)->from($table1);
+		$query->join($table2, $joincond1);
+		$query->join($table3, $joincond2);
+		(!empty($groupby)) ? $query->group_by($groupby) : $query;
+		(!empty($where)) ? $query->where($where) : $query;
+		(!empty($wherein)) ? $query->where_in($wherein) : $query;
+		return $query->get()->result_array();
     }
     public function getLikeDatas($table, $select, $where = NULL, $like) {
     	$query = $this->db->select($select)->from($table);
