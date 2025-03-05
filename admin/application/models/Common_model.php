@@ -34,6 +34,7 @@ class Common_model extends CI_Model {
 		$this->db->set($values)->where($where)->update($table);
 		return ($this->db->affected_rows() > 0) ? 1 : 0;
 	}
+
 	public function UpdateBatchData($table, $values, $where) {
 		$this->db->update_batch($table, $values, $where);
 		return ($this->db->affected_rows() > 0) ? 1 : 0;

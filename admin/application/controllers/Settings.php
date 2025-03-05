@@ -300,7 +300,7 @@ class Settings extends CI_Controller {
             }
             $table   = "appointments";
             $where   = ["md5(`fld_appointid`)" => $id];
-            $check   = $this->Common_model->GetJoinDatas('appointments AP', 'customers C', "`AP`.`fld_acustid` = `C`.`fld_id`", "`AP`.fld_appointid,`AP`.fld_adate,`AP`.fld_aserv,`AP`.fld_atime, `C`.fld_name,`C`.fld_lastname,`C`.fld_email,`AP`.fld_arate,`AP`.fld_apaymode", $where);
+            $check   = $this->Common_model->GetJoinDatas('appointments AP', 'customers C', "`AP`.`fld_acustid` = `C`.`fld_id`", "`AP`.fld_aid, `AP`.fld_appointid, `AP`.fld_adate, `AP`.fld_aserv, `AP`.fld_atime, `C`.fld_name,`C`.fld_lastname,`C`.fld_email,`AP`.fld_arate,`AP`.fld_apaymode", $where);
             $tomail  = $check[0]['fld_email'];
             $name    = $check[0]['fld_name'] . " " . $check[0]['fld_lastname'];
             $subject = 'Your Booking is Confirmed! Thank You for Booking with Us';
@@ -313,7 +313,14 @@ class Settings extends CI_Controller {
                 $Pdf  = $this->pdf_generate($check[0]['fld_appointid']);
                 $mail = SendEmail($tomail, "", "", $subject, $bookingtemplates, $Pdf);
             }
-            $value = [$coloum => $type, 'fld_apaymode' => $paymentMode];
+
+            if($paymentMode == 'Online') {
+                $value = [$coloum => $type, 'fld_apaymode' => $paymentMode, 'fld_abalance' => 0];
+                $this->Common_model->UpdateData( 'payments', [ 'fld_ppaid' => $check[0]['fld_arate'],'fld_pbalance' => 0 ], ['fld_appid' => $check[0]['fld_aid']] );
+            }else{
+               $value = [$coloum => $type, 'fld_apaymode' => $paymentMode];
+            }
+
         } else if ($table == "leave") {
             $table = "leaves";
             $where = ["md5(`fld_lid`)" => $id];

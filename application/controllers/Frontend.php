@@ -610,7 +610,7 @@ class Frontend extends CI_Controller {
 
         $result = $this->Common_model->InsertBatchData('appointment_meta', $new_meta_data);
 
-        $this->Common_model->InsertData('payments', [ 'fld_appid' => $app_lastid, 'fld_prate' => ($newrate), 'fld_ppaid' => ($newrate), 'fld_pbalance' => 0, 'fld_phistory' => json_encode($history)]);
+        $this->Common_model->InsertData('payments', [ 'fld_appid' => $app_lastid, 'fld_prate' => ($newrate), 'fld_ppaid' => 0, 'fld_pbalance' => 0, 'fld_phistory' => json_encode($history)]);
         $prev_used_cnt = $this->Common_model->GetDatas('coupons', 'fld_cpused', ['fld_cpid' => $coupon_id]);
 
         $cp_cnt = 1;

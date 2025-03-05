@@ -669,7 +669,7 @@ class Backend extends CI_Controller {
 			$this->Common_model->UpdateData('appointments', $updatedata, ['fld_aid' => $appid]);
 			$this->Common_model->DeleteData('appointment_meta', ['fld_amappid' => $appid]);
 			$result  = $this->Common_model->InsertBatchData('appointment_meta', array_reverse($metavalue));
-			$this->Common_model->UpdateData('payments', ['fld_prate' => $rate, 'fld_ppaid' => $amount, 'fld_pbalance' => $balance, 'fld_phistory' => json_encode($history)], ['fld_appid' => $appid]);
+			// $this->Common_model->UpdateData('payments', ['fld_prate' => $rate, 'fld_ppaid' => $amount, 'fld_pbalance' => $balance, 'fld_phistory' => json_encode($history)], ['fld_appid' => $appid]);
             
 			$tomail = (!empty($check)) ? $check[0]['fld_email'] : $custemail;
 			$name = (!empty($check)) ? $check[0]['fld_name'] : $custname;
