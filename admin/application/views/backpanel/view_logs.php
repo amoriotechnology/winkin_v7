@@ -4,11 +4,6 @@
 
         <!-- Page Header -->
         <div class="my-4 page-header-breadcrumb d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div>
-                <h1 class="page-title fw-medium fs-18 mb-2">Manage Logs</h1>
-            </div>
-
-
         </div>
         <!-- Page Header Close -->
 
@@ -17,11 +12,13 @@
                 <div class="card custom-card">
                     <div class="card-body">
                         <div class="table-responsive">
-                            <div class="row d-flex justify-content-end">
-                                <div class="col-xl-5 col-md-12 col-sm-12">
-                                    <div class="input-group">
+                            <div class="row">
+                                <div class="col d-flex justify-content-end">
+                                    <div class="input-group" style="max-width: 25em;">
                                         <input type="text" name="datefilter" id="datefilter" class="form-control datefilter" placeholder="Search date">
-                                        <a href="<?= base_url('revenue') ?>" id="search" class="btn btn-primary">Refresh</a>
+                                        <a href="<?= base_url('viewlogs') ?>" id="search" class="btn btn-primary">
+                                            <i class="bi bi-arrow-clockwise"></i>
+                                        </a>
                                     </div>
                                 </div>
                             </div>

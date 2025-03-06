@@ -275,9 +275,9 @@ if(!empty($edit_appoint)) {
                                                         <label for="paymode"> <b>Payment Mode</b></label>
                                                         <select name="pay_mode" class="form-select" id="paymode" required>
                                                             <option value="">Select Payment Mode</option>
-                                                            <option value="Online">Online</option>
+                                                            <!-- <option value="Online">Online</option> -->
                                                             <option value="Cash">Cash</option>
-                                                            <option value="Upi">Upi</option>
+                                                            <option value="UPI">UPI</option>
                                                         </select>
                                                     </div>
                                                     <div class="col-xl-12 UPI d-none">
