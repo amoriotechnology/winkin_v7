@@ -182,7 +182,7 @@ class Common_model extends CI_Model {
         if (!empty(trim($search))) {
         	$search = trim($search);
             $this->db->group_start();
-            $columns = ['DATE_FORMAT(A.fld_booked_date, "%d/%m/%Y")', 'DATE_FORMAT(P.fld_pdate, "%d/%m/%Y")', 'A.fld_appointid', 'C.fld_name', 'C.fld_phone', 'P.fld_pamt', 'A.fld_payment_id', 'P.fld_phistory','A.fld_apaystatus','A.fld_astatus'];
+            $columns = ['DATE_FORMAT(A.fld_booked_date, "%d/%m/%Y")', 'DATE_FORMAT(P.fld_pdate, "%d/%m/%Y")', 'A.fld_appointid', 'C.fld_name', 'C.fld_phone', 'P.fld_ppaid', 'A.fld_payment_id', 'P.fld_phistory','A.fld_apaystatus','A.fld_astatus'];
             foreach ($columns as $column) {
                 $this->db->or_like($column, $search);
             }
