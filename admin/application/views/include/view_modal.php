@@ -165,37 +165,40 @@
                     <table class="table table-hover">
                         <tr>
                             <th class="table-info text-uppercase" width="30%">Booking ID</th>
-                            <td><b><span id="appo_id" class="text-primary h5"></span></b></td>
+                            <td colspan="3"><b><span id="appo_id" class="text-primary h5"></span></b></td>
                         </tr>
                         <tr>
                             <th class="table-info text-uppercase" width="30%">Booking Date</th>
-                            <td><span id="book_date"></span></td>
+                            <td colspan="3"><span id="book_date"></span></td>
                         </tr>
                         <tr>
                             <th class="table-info text-uppercase" width="30%">Slot Date & Time</th>
-                            <td><span id="app_date"></span></td>
+                            <td colspan="3"><span id="app_date"></span></td>
                         </tr>
                         <tr>
                             <th class="table-info text-uppercase" width="30%">Full Name</th>
-                            <td><span id="app_name"></span></td>
+                            <td colspan="3"><span id="app_name"></span></td>
                         </tr>
                       
                         <tr>
                             <th class="table-info text-uppercase" width="30%">Phone</th>
-                            <td><span id="app_number"></span></td>
+                            <td colspan="3"><span id="app_number"></span></td>
                         </tr>
                         <tr>
                             <th class="table-info text-uppercase" width="30%">Email</th>
-                            <td><span id="app_email"></span></td>
+                            <td colspan="3"><span id="app_email"></span></td>
                         </tr>
                         <tr>
                             <th class="table-info text-uppercase" width="30%">Date of Birth</th>
-                            <td><span id="app_dob"></span></td>
+                            <td colspan="3"><span id="app_dob"></span></td>
                         </tr>
-                      
                         <tr>
                             <th class="table-info text-uppercase" width="30%">Pay Mode</th>
-                            <td><span id="app_paymode"></span></td>
+                            <td colspan="3"><span id="app_paymode"></span></td>
+                        </tr>
+                        <tr>
+                            <th class="table-info text-uppercase" width="30%">Payment ID</th>
+                            <td colspan="3"><span id="app_payid"></span></td>
                         </tr>
                     
                         <tr> <th> <td></td> </th> </tr>
@@ -240,7 +243,7 @@
             $('#name, #phone, #dob, #anni_date, #cprefer, #cserv_note').html('');
 
         } else if(type == 'appointment') {
-            $('#appo_id, #book_date, #app_date, #app_name, #app_number, #app_email, #app_serv, #app_paymode, #app_dob, #app_marital_sts, #app_anni_date, #app_prefe, #app_notes').html('');
+            $('#appo_id, #book_date, #app_date, #app_name, #app_number, #app_email, #app_serv, #app_paymode, #app_payid, #app_dob, #app_marital_sts, #app_anni_date, #app_prefe, #app_notes').html('');
         }
 
         $.ajax({
@@ -308,6 +311,7 @@
                         $('#app_number').html(res[key].app_phone);
                         $('#app_email').html(res[key].app_email);
                         $('#app_paymode').html(res[key].app_paymode);
+                        $('#app_payid').html(res[key].app_payid);
                         $('#app_dob').html(displayDate(res[key].cdob));
                         var tbody = '';
                         var rate = 0;

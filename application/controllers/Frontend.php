@@ -359,8 +359,8 @@ class Frontend extends CI_Controller {
                     $isChecked = ($apptime == $looptime) || ($prevtime == $looptime);
 
                     $bgColor = ($blockid == "Maintenance") ? 'bg-orange' : '';
-                    $response .= '<td class="text-center '.($isDisabled ? 'cal-disabled' : '').' '.($isChecked ? 'btn-success' : 'btn-outline-success').' time-btn'.$k.' '.$classtime.' '.$bgColor.'" style="cursor: pointer;" data-time="'.$prev_class.'" onclick="getTimeRate(\''.showTime($looptime).'\', 30)"  data-next="'.$next_class.'">
-                        <label class="text-dark '.($isDisabled ? 'cal-disabled' : '').'">
+                    $response .= '<td class="tooltip-text rounded text-center '.(($isChecked) ? 'btn-success strike-out' : ($isDisabled ? 'cal-disabled' : 'btn-outline-success')).' time-btn'.$k.' '.$classtime.' '.$bgColor.'" style="cursor: pointer;" data-time="'.$prev_class.'" onclick="getTimeRate(\''.showTime($looptime).'\', 30)"  data-next="'.$next_class.'">
+                        <label class="text-dark '.($isDisabled ? 'strike-out' : '').'">
                           <div class="align-items-center text-dark">
                             <div class="input-group">
                               <small><b> '.showTime($looptime).'</b><br>';

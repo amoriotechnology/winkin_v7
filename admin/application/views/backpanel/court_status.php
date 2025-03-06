@@ -101,7 +101,7 @@ if(!empty($edit_appoint)) {
 
 ?>
 
-<!-- Start::app-content -->
+<!-- Booking Detail Modal -->
 <div class="main-content app-content">
     <div class="modal fade" id="customerDetailsModal" aria-labelledby="ViewCustModalToggleLabel" tabindex="-1" aria-hidden="true" style="display: none;">
         <div class="modal-dialog modal-dialog-centered modal-md">
@@ -153,20 +153,18 @@ if(!empty($edit_appoint)) {
     </div>
     <section class="section section-bg" id="booking" >
         <div class="container">
-            <div class="text-center">
-                <h2 class="text-dark fw-semibold">&emsp;</h2>
-            </div>
-
             <!-- Start::row-1 -->
             <div class="row mt-2">
                 <div class="col-xl-12">
                     <div class="card custom-card">
+                        <div class="card-header text-center">
+                            <h5 class="text-dark fw-semibold"><?= ($appkey > 0) ? $appkey.' - Reschedule' : 'Book Your Court'; ?></h5>
+                        </div>
                         <div class="card-body p-0">
                             <form class="wizard wizard-tab horizontal" method="POST" id="appointment_form">
                                 <input type="hidden" id="csrftoken" name="<?= $this->security->get_csrf_token_name();?>" value="<?= $this->security->get_csrf_hash();?>">
 
                                 <aside class="wizard-content container">
-
                                     <div class="wizard-step" data-title="Date & Time" data-id="dOM0iRAyJXsLTr9b3KZfQ2jNv4pgn6Gu" data-limit="3">
 
                                         <div class="choose-time-error-msg text-center mb-2" tabindex="-1"></div>
@@ -218,10 +216,11 @@ if(!empty($edit_appoint)) {
                                             </div>
                 
                                             <p class="text-center m-2"> 
-                                                <span> <span class="bg-success m-2">&emsp;</span>Selected</span> 
-                                                <span> <span class="cal-disabled btn-success m-2">&emsp;</span>Booked</span> 
-                                                <span> <span class="bg-orange m-2">&emsp;</span>Maintenance</span> 
-                                                <span> <span class="cal-disabled m-2">&emsp;</span>Disabled</span>
+                                                <span> <span class="rounded bg-success m-2">&emsp;&emsp;</span>Selected</span> 
+                                                <span> <span class="rounded text-dark strike-out text-decoration-line-through btn-success m-2">&emsp;&emsp;</span>Booked</span> 
+                                                <span> <span class="rounded bg-info strike-out m-2">&emsp;&emsp;</span>Pending</span> 
+                                                <span> <span class="rounded bg-orange strike-out m-2">&emsp;&emsp;</span>Maintenance</span> 
+                                                <span> <span class="rounded text-decoration-line-through cal-disabled m-2">&emsp;&emsp;</span>UnAvailable</span>
                                             </p>
                                         </div>
                                     </div>
@@ -952,7 +951,7 @@ function getCustomerDetails(id) {
 
 function getTimeRate(starttime, duration, rate) {
 
-    var viewtimes = "Selected Timings: <b>"+starttime+" - "+DisplayTime(starttime, parseInt(duration))+"</b> <br> Amount ₹: <b>"+rate+"</b>";
+    var viewtimes = "Timings: <b>"+starttime+" - "+DisplayTime(starttime, parseInt(duration))+"</b> <br> Amount ₹: <b>"+rate+"</b>";
     viewtimes = (starttime == undefined) ? "" : viewtimes;
     $("#viewTimes").html(viewtimes);
 }

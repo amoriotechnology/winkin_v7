@@ -68,7 +68,7 @@
 }
 
     small{
-        font-size: 1.0em
+        font-size: 1.0em !important;
         font-weight: bold;
     }
 
@@ -205,10 +205,10 @@ if(!empty($edit_appoint)) {
                                                 <span class="time-countdown"></span>
                                             </div>
                                             <p class="text-center m-2"> 
-                                                <span class="m-2"> <span class="bg-success m-2">&emsp;</span>Selected</span> 
-                                                <span class="m-2"> <span class="cal-disabled btn-success m-2">&emsp;</span>Booked</span> 
-                                                <span> <span class="bg-orange m-2">&emsp;</span>Maintenance</span> 
-                                                <span class="m-2"> <span class="cal-disabled m-2">&emsp;</span>Disabled</span> 
+                                                <span> <span class="rounded bg-success m-2">&emsp;&emsp;</span>Selected</span> 
+                                                <span> <span class="rounded strike-out bg-success m-2">&emsp;&emsp;</span>Booked</span> 
+                                                <span> <span class="rounded bg-orange strike-out m-2">&emsp;&emsp;</span>Maintenance</span> 
+                                                <span> <span class="rounded cal-disabled strike-out m-2">&emsp;&emsp;</span>UnAvailable</span> 
                                             </p>
                                         </div>
                                     </div>
