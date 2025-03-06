@@ -58,7 +58,7 @@
 .cal-leave { opacity: 0.5; background: #817c7a82; }
 
 .cal-leave, .cal-disabled {
-    cursor: not-allowed;
+    cursor: not-allowed !important;
 }
 
 

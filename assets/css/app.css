@@ -10676,7 +10676,7 @@ input[type="range"]::-webkit-slider-runnable-track {
 }
 .wizard-tab .wizard-content {
   transition: all 0.3s ease-in;
-  padding: 3rem;
+  padding: 1rem;
 }
 .wizard-tab .wizard-content .wizard-step {
   transition: all 0.3s ease-in;

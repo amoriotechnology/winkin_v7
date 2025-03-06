@@ -568,11 +568,6 @@ class Backend extends CI_Controller {
 		$custphone 	= trim($this->input->post('cust_phone', TRUE));
 		$custemail 	= trim($this->input->post('cust_email', TRUE));
 		$custdob 	= trim($this->input->post('cust_dob', TRUE));
-		$custgender = trim($this->input->post('cust_gender', TRUE));
-		$mari_sts 	= trim($this->input->post('mari_sts', TRUE));
-		$anni_date 	= trim($this->input->post('anni_date', TRUE));
-		$custaddr 	= trim($this->input->post('cust_addr', TRUE));
-		$custpref 	= trim($this->input->post('cust_pref', TRUE));
 
 		/* service detail*/
 		$admincourt 	= $this->input->post('admincourt', TRUE);
@@ -1006,7 +1001,7 @@ class Backend extends CI_Controller {
         }
 
         /* ----- For get booked time of the selected date ----- */
-        $appoint_times = $this->Common_model->GetJoinDatas("appointments A", "appointment_meta AM", "`A`.`fld_aid`=`AM`.`fld_amappid`", "`fld_appointid`, `fld_adate`, `fld_amserv_name`, `fld_amstaff_time`, `fld_aduring`, `fld_amserv_dura`, `fld_atype`", "`fld_amserv_name` IN ('" . $court . "') AND `fld_adate` = '" . $date . "' AND `fld_astatus` != 'Cancelled'");
+        $appoint_times = $this->Common_model->GetJoinDatas("appointments A", "appointment_meta AM", "`A`.`fld_aid`=`AM`.`fld_amappid`", "`fld_appointid`, `fld_adate`, `fld_amserv_name`, `fld_amstaff_time`, `fld_aduring`, `fld_amserv_dura`, `fld_astatus`, `fld_atype`", "`fld_amserv_name` IN ('" . $court . "') AND `fld_adate` = '" . $date . "' AND `fld_astatus` != 'Cancelled'");
         $blockdata     = [];
         $prev_id       = '';
         foreach ($appoint_times as $key => $val) {
@@ -1017,7 +1012,7 @@ class Backend extends CI_Controller {
             }
             $times                                      = date('h:i A', strtotime($val['fld_amstaff_time']));
             $type                                       = (($val['fld_atype'] == "Maintenance") ? "Maintenance" : $val['fld_appointid']);
-            $blockdata[$val['fld_amserv_name']][$times] = ['appid' => $type, 'astart' => date('H:i', strtotime($val['fld_amstaff_time'])), 'aend' => date('H:i', strtotime($val['fld_amstaff_time'] . ' +' . $dura . ' minutes'))];
+            $blockdata[$val['fld_amserv_name']][$times] = ['appid' => $type, 'astart' => date('H:i', strtotime($val['fld_amstaff_time'])), 'aend' => date('H:i', strtotime($val['fld_amstaff_time'] . ' +' . $dura . ' minutes')), 'book_status' => $val['fld_astatus']];
             $prev_id                                    = $val['fld_amserv_name'];
         }
 
@@ -1111,6 +1106,7 @@ class Backend extends CI_Controller {
                         $blockid    = isset($blockdata[$court][$time_stru]) ? $blockdata[$court][$time_stru]['appid'] : "";
                         $blockstart = isset($blockdata[$court][$time_stru]) ? $blockdata[$court][$time_stru]['astart'] : "";
                         $blockend   = isset($blockdata[$court][$time_stru]) ? $blockdata[$court][$time_stru]['aend'] : "";
+                        $blockstatus   = isset($blockdata[$court][$time_stru]) ? $blockdata[$court][$time_stru]['book_status'] : "";
 
                         $apptime           = ! empty($blockstart) ? date("H:i", strtotime($blockstart)) : $prevtime;
                         $select_time_start = (isset($selected_time[$court]) ? $selected_time[$court]['start'] : "");
@@ -1122,8 +1118,8 @@ class Backend extends CI_Controller {
                         $isChecked  = ($apptime == $looptime) || ($prevtime == $looptime);
                         $bgColor    = ($blockid == "Maintenance") ? 'bg-orange' : '';
 
-                        $response .= '<td class="text-center ' . ($isDisabled ? 'cal-disabled' : '') . ' ' . ($isChecked ? 'btn-success' : 'btn-outline-success') . ' time-btn' . $k . ' ' . $classtime . ' ' . $bgColor . '" style="cursor: pointer;" data-time="' . $prev_class . '" onclick="getTimeRate(\'' . showTime($looptime) . '\', 30)"  data-next="' . $next_class . '">
-                        <label class="text-dark ' . ($isDisabled ? 'cal-disabled' : '') . '">
+                        $response .= '<td class="rounded text-center ' . (($isChecked) ? (($blockstatus == "Pending") ? 'btn-info strike-out' : 'btn-success strike-out') : ($isDisabled ? 'cal-disabled' : 'btn-outline-success')) . ' time-btn' . $k . ' ' . $classtime . ' ' . $bgColor . '" style="cursor: pointer;" data-time="' . $prev_class . '" onclick="getTimeRate(\'' . showTime($looptime) . '\', 30)"  data-next="' . $next_class . '">
+                        <label class="text-dark ' . (($isDisabled) ? 'strike-out' : '') . '">
                           <div class="align-items-center text-dark">
                           <input type="hidden" class="existing_slot" value="' . $scheduleCount . '">
                              <div class="input-group">

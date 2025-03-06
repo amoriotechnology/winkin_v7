@@ -120,6 +120,13 @@
   font-size: 15px;
 }
 
+.tooltip-text:after:hover {
+  content: "UnAvailable";
+  position: absolute;
+  text-align: center;
+  background-color: #000;
+  color: #fff;
+}
 
 /* Medium screens (Tablets) */
 @media (max-width: 1024px) {

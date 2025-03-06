@@ -58,9 +58,13 @@
 .cal-leave { opacity: 0.5; background: #817c7a82; }
 
 .cal-leave, .cal-disabled {
-    cursor: not-allowed;
+    cursor: not-allowed !important;
 }
 
+.strike-out {
+    text-decoration: line-through;
+    cursor: not-allowed !important;
+}
 
 @media (max-width: 768px) {
     .cal-menu-wrapper { height: 14vh; }

@@ -295,6 +295,7 @@ use Razorpay\Api\Api;
 						'app_sts' => $rec['fld_astatus'],
 						'app_reason' => $rec['fld_cancel_reason'],
 						'app_paymode' => $rec['fld_apaymode'],
+						'app_payid' => $rec['fld_payment_id'],
 						'app_paid' => round((float)$rec['paid'], 2),
 						'app_balance' => round((float)$rec['fld_abalance'], 2),
 						'app_paysts' => $rec['fld_apaystatus'],
