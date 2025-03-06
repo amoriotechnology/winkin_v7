@@ -738,7 +738,7 @@ class Backend extends CI_Controller {
 					'fld_astatus' => $status,
 					'fld_apaymode' => $paymode,
 					'fld_apaystatus' => '',
-					'fld_abalance' => $newbalance,
+					'fld_abalance' => 0,
 					'fld_acpid' => $coupon_id,
 					'fld_acppercent' => $coupon_percent,
 					'fld_acpamt' => $coupon_amount,
@@ -762,7 +762,7 @@ class Backend extends CI_Controller {
             
             logEntry('Appointment Booking', 'Court Status', 'Appointment Booking successfully', 'Add', json_encode($timings));
 			$result = $this->Common_model->InsertBatchData('appointment_meta', array_reverse($new_meta_data));
-			$this->Common_model->InsertData('payments', [ 'fld_appid' => $app_lastid, 'fld_prate' => $newrate, 'fld_ppaid' => $amount, 'fld_pbalance' => $newbalance, 'fld_phistory' => json_encode($history)]);
+			$this->Common_model->InsertData('payments', [ 'fld_appid' => $app_lastid, 'fld_prate' => $newrate, 'fld_ppaid' => $newrate, 'fld_pbalance' => 0, 'fld_phistory' => json_encode($history)]);
 
 			$prev_used_cnt = $this->Common_model->GetDatas('coupons', 'fld_cpused', ['fld_cpid' => $coupon_id]);
 			$cp_cnt = 1;
