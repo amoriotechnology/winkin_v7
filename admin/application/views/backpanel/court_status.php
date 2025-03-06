@@ -220,7 +220,7 @@ if(!empty($edit_appoint)) {
                                                 <span> <span class="rounded text-dark strike-out text-decoration-line-through btn-success m-2">&emsp;&emsp;</span>Booked</span> 
                                                 <span> <span class="rounded bg-info strike-out m-2">&emsp;&emsp;</span>Pending</span> 
                                                 <span> <span class="rounded bg-orange strike-out m-2">&emsp;&emsp;</span>Maintenance</span> 
-                                                <span> <span class="rounded text-decoration-line-through cal-disabled m-2">&emsp;&emsp;</span>UnAvailable</span>
+                                                <span> <span class="rounded strike-out cal-disabled m-2">&emsp;&emsp;</span>UnAvailable</span>
                                             </p>
                                         </div>
                                     </div>
