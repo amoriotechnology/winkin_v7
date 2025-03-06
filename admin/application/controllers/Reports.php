@@ -176,8 +176,8 @@ class Reports extends CI_Controller {
                 $action .= '<li> <a class="dropdown-item cancel-confirm" data-id="' . md5($item['fld_aid']) . '">Cancelled</a> </li>';
             }
             if ($item['fld_astatus'] == "Pending") {
-                $action .= '<li> <a class="dropdown-item release_confirm" data-id="' . md5($item['fld_appointid']). '" data-status="admin_update">Confirm</a> </li>';
-                $action .= '<li> <a class="dropdown-item release_confirm" data-id="' . md5($item['fld_appointid']) . '" data-status="Release">Release</a></li>';
+                $action .= '<li> <a class="dropdown-item release_confirm" data-id="' . md5($item['fld_appointid']). '" data-status="admin_update" data-amount="'.$item['fld_arate'].'">Confirm</a> </li>';
+                $action .= '<li> <a class="dropdown-item release_confirm" data-id="' . md5($item['fld_appointid']) . '" data-status="Release" data-paymode="'.$item['fld_apaymode'].'">Release</a></li>';
             }
             $action .= '</ul>
                     </div>';

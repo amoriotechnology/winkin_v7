@@ -6,11 +6,7 @@
 <div class="main-content app-content">
     <div class="container-fluid">
         <!-- Start::page-header -->
-        <div
-            class="my-4 page-header-breadcrumb d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div>
-                <h1 class="page-title fw-medium fs-18 mb-2">Dashboard</h1>
-            </div>
+        <div class="my-4 page-header-breadcrumb d-flex align-items-center justify-content-between flex-wrap gap-2">
         </div>
         <!-- End::page-header -->
         <!-- Start:: row-1 -->

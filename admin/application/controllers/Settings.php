@@ -283,6 +283,7 @@ class Settings extends CI_Controller {
         $table  = trim($this->input->post('table', TRUE));
         $coloum = trim($this->input->post('coloum', TRUE));
         $type   = trim($this->input->post('type', TRUE));
+
         $value  = [$coloum => $type];
         if ($table == "calender") {
             $table = "staff_attendance";
@@ -293,18 +294,18 @@ class Settings extends CI_Controller {
             $where = ["md5(`fld_appointid`)" => $id];
 
         } else if ($table == "update_status") {
+
             $paymentMode = trim($this->input->post('paymentMode', TRUE)) ?: '';
 
-            if ($type == 'admin_update') {
-                $type = "Confirmed";
-            }
+            if ($type == 'admin_update') { $type = "Confirmed"; }
             $table   = "appointments";
             $where   = ["md5(`fld_appointid`)" => $id];
+
             $check   = $this->Common_model->GetJoinDatas('appointments AP', 'customers C', "`AP`.`fld_acustid` = `C`.`fld_id`", "`AP`.fld_aid, `AP`.fld_appointid, `AP`.fld_adate, `AP`.fld_aserv, `AP`.fld_atime, `C`.fld_name,`C`.fld_lastname,`C`.fld_email,`AP`.fld_arate,`AP`.fld_apaymode", $where);
+
             $tomail  = $check[0]['fld_email'];
             $name    = $check[0]['fld_name'] . " " . $check[0]['fld_lastname'];
             $subject = 'Your Booking is Confirmed! Thank You for Booking with Us';
-            if ($paymentMode === 'true') {$paymentMode = '';}
             $bookingtemplates = BookingTemplate(['name' => $name, 'type' => $type, 'appoint_id' => $check[0]['fld_appointid'], 'payment_method' => $paymentMode, 'court' => $check[0]['fld_aserv'], 'date' => showDate($check[0]['fld_adate']), 'time' => json_decode($check[0]['fld_atime'], true), 'amount' => $check[0]['fld_arate'], 'couponAmount' => '', 'gstAmount' => '', 'payCharge' => '']);
             if ($type == 'Cancelled') {
                 $subject = 'Your Booking is Cancelled! Please Try After Sometime';
@@ -314,10 +315,10 @@ class Settings extends CI_Controller {
                 $mail = SendEmail($tomail, "", "", $subject, $bookingtemplates, $Pdf);
             }
 
-            if($paymentMode == 'Online') {
+            if($paymentMode == 'Online' && $type == "Confirmed") {
                 $value = [$coloum => $type, 'fld_apaymode' => $paymentMode, 'fld_abalance' => 0];
                 $this->Common_model->UpdateData( 'payments', [ 'fld_ppaid' => $check[0]['fld_arate'],'fld_pbalance' => 0 ], ['fld_appid' => $check[0]['fld_aid']] );
-            }else{
+            } else {
                $value = [$coloum => $type, 'fld_apaymode' => $paymentMode];
             }
 

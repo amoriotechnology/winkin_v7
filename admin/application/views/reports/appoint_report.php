@@ -9,30 +9,36 @@
 
         <!-- Page Header -->
         <div class="my-4 page-header-breadcrumb d-flex align-items-center justify-content-between flex-wrap gap-2">
-            <div>
+           <!--  <div>
                 <h1 class="page-title fw-medium fs-18 mb-2">Bookings</h1>
-            </div>
+            </div> -->
         </div>
         <!-- Page Header Close -->
 
         <div class="row">
             <div class="col-xl-12">
                 <div class="card custom-card">
-                    <div class="card-header">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <div class="card-title">
-                            <a href="<?php echo base_url('court_status'); ?>" class="btn btn-primary"><i class="bi bi-plus"></i> New Booking</a>
+                            <a href="<?php echo base_url('court_status'); ?>" class="btn btn-primary">
+                                <i class="bi bi-plus"></i> New Booking
+                            </a>
+                        </div>
+                        <div class="row d-flex justify-content-end">
+                            <div class="col-12">
+                                <label for="datefilter" class="fw-bold text-left">Search by Slot Date</label>
+                                <div class="input-group">
+                                    <input type="text" name="datefilter" id="datefilter" class="form-control datefilter" size="40" >
+                                    <a href="<?= base_url('bookings') ?>" id="search" class="btn btn-primary">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
-                            <div class="row d-flex justify-content-end">
-                                <div class="col-xl-4 col-md-12 col-sm-12">
-                                    <div class="input-group">
-                                        <input type="text" name="datefilter" id="datefilter" class="form-control datefilter" placeholder="Search date">
-                                        <a href="<?= base_url('bookings') ?>" id="search" class="btn btn-primary">Refresh</a>
-                                    </div>
-                                </div>
-                            </div>
+                           
                             <table id="booking_list" class="table table-bordered table-hover text-nowrap w-100">
                                 <thead class="table-dark">
                                     <tr class="filter-row">
@@ -92,7 +98,7 @@
         }
  
         // Release and Confirm on change by the Admin , when the booking is empty
-        function handleStatusAction(id,status, inputLabel = '', inputPlaceholder = '') {
+        function handleStatusAction(id, status, inputLabel = '', inputPlaceholder = '', amount = '') {
             let swalOptions = {
                 showCancelButton: true,
                 confirmButtonText: 'OK',
@@ -100,18 +106,23 @@
             };
             if (status === 'admin_update') {
                 swalOptions.title = 'Select Payment Mode';
-                    swalOptions.input = 'select'; 
-                    swalOptions.inputPlaceholder = inputPlaceholder || 'Select the payment mode';
-                    swalOptions.inputOptions = {
-                        'Cash': 'Cash',
-                        'Upi': 'Upi',
-                        'Online': 'Online',
-                    };
-                swalOptions.preConfirm = (paymentMode) => {
+                swalOptions.html = `
+                    <select id="swal-input-select" class="form-control">
+                        <option value="" disabled selected>Select the payment mode</option>
+                        <option value="Cash">Cash</option>
+                        <option value="Upi">Upi</option>
+                        <option value="Online">Online</option>
+                    </select>
+                    <input type="text" id="swal-input-text" class="mt-3 form-control" value="₹`+amount+`" readonly>
+                `;
+                swalOptions.preConfirm = () => {
+                    const paymentMode = document.getElementById('swal-input-select').value;
+                    const additionalInfo = document.getElementById('swal-input-text').value;
+
                     if (!paymentMode) {
-                        Swal.showValidationMessage('Please enter a payment mode');
+                        Swal.showValidationMessage('Please select a payment mode');
                     } else {
-                        sendAjaxRequest(status,{ id: id, paymentMode: paymentMode });
+                        sendAjaxRequest(status, { id:id, paymentMode:paymentMode, additionalInfo: additionalInfo });
                     }
                 };
             } else if (status === 'Cancelled') {
@@ -124,7 +135,7 @@
                     if (!paymentMode) {
                         Swal.showValidationMessage('Please enter a payment mode');
                     } else {
-                        sendAjaxRequest(status,{ id: id, paymentMode: paymentMode });
+                        sendAjaxRequest(status,{ id:id, paymentMode:inputLabel });
                     }
                 };
             }
@@ -134,6 +145,17 @@
         function sendAjaxRequest(status, data = {}) {
             var csrfName = "<?= $this->security->get_csrf_token_name() ?>";
             var csrfHash = "<?= $this->security->get_csrf_hash() ?>";
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Please wait...',
+                icon: 'info',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
             $.ajax({
                 url: '<?= base_url('common_update'); ?>',
                 type: 'post',
@@ -148,22 +170,24 @@
             });
         }
         
-   $("body").on('click', ".release_confirm", function() {
+        $("body").on('click', ".release_confirm", function() {
             var csrfName = "<?= $this->security->get_csrf_token_name() ?>";
             var csrfHash = "<?= $this->security->get_csrf_hash() ?>";
             var status = $(this).data('status');
             var id = $(this).data('id');
+            var Getamount = $(this).data('amount');
+            var Getmode = $(this).data('paymode');
+
             if (status === 'admin_update') {
-                handleStatusAction(id,'admin_update', 'Payment Mode', 'Enter the payment mode');
+                handleStatusAction(id,'admin_update', 'Payment Mode', 'Enter the payment mode', Getamount);
             } else if (status === 'Release') {
-                handleStatusAction(id,'Cancelled');
+                handleStatusAction(id,'Cancelled', Getmode);
             }
         });
 
 
         /* ----- Update booking Status ----- */
         $("body").on('click', ".update_booking", function() {
-            
             var csrfName = "<?= $this->security->get_csrf_token_name() ?>";
             var csrfHash = "<?= $this->security->get_csrf_hash() ?>";
             var status = $(this).data('status');
