@@ -1108,7 +1108,7 @@ class Reports extends CI_Controller {
                         $col_where["C.fld_phone LIKE"] = "%$searchValue%";
                         break;
                     case 6:
-                        $col_where["P.fld_pamt LIKE"] = "%$searchValue%";
+                        $col_where["P.fld_ppaid LIKE"] = "%$searchValue%";
                         break;
                     case 7:
                         $col_where["A.fld_payment_id LIKE"] = "%$searchValue%";
@@ -1169,7 +1169,7 @@ class Reports extends CI_Controller {
                 "fld_appointid"   => $item['fld_appointid'],
                 "fld_name"        => $item['fld_name'],
                 "fld_phone"       => $item['fld_phone'],
-                "fld_pamt"  => !empty($item['fld_pamt']) ? $item['fld_pamt'] : "0.00",
+                "fld_pamt"  => !empty($item['fld_ppaid']) ? $item['fld_ppaid'] : "0.00",
                 "fld_payment_id"  => !empty($item['fld_payment_id']) ? $item['fld_payment_id'] : "",
                 "fld_phistory"    => $item['fld_phistory'] = str_replace('"', "", $item['fld_phistory']),
                 "fld_apaystatus"  => !empty($item['fld_apaystatus']) ? $item['fld_apaystatus'] : "",
