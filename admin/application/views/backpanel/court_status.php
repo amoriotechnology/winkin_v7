@@ -198,7 +198,7 @@ if(!empty($edit_appoint)) {
                                                     </div>
                                                     <div class="calendar-month-year"></div>
                                                     <div class="calendar-arrow-container">
-                                                      <button type="button" class="calendar-today-button"></button>
+                                                      <button type="button" class="d-none calendar-today-button"></button>
                                                       <button type="button" class="calendar-left-arrow"> <i class="bi bi-caret-left-fill"></i> </button>
                                                       <button type="button" class="calendar-right-arrow"> <i class="bi bi-caret-right-fill"></i> </button>
                                                     </div>
@@ -497,7 +497,7 @@ $(document).ready(function() {
         var element = $('#cust_phone').parent().children('span');
         element.addClass('text-danger').removeClass('text-success').html('');
 
-        $('#cust_name, #cust_lname, #cust_email, #cust_dob').val('');
+        $('#cust_name, #cust_lname, #cust_email, #cust_dob').val('').removeAttr('readonly');
         if(phone.length > 9) {
             $('.anni_field').addClass('d-none');
             $.ajax({
@@ -510,7 +510,7 @@ $(document).ready(function() {
                     if(res != "") {
                         element.removeClass('text-danger').addClass('text-success').html('New Customer');
                         element.addClass('text-success').html('Existing Customer');
-                        console.log(res, res.custlname);
+                        $("#cust_name, #cust_lname, #cust_email").attr('readonly', 'readonly');
                         $('#cust_name').val(res.custname);
                         $('#cust_lname').val(res.custlname);
                         $('#cust_email').val(res.custemail);

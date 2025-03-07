@@ -114,7 +114,7 @@ function generateCalendarDays(currentDate) {
     var cur_month = (currentDate.getMonth() + 1);
     var cur_date = currentDate.getDate();
     
-  var court_date = new Date($('#court_date').val(cur_year+'-'+cur_month+'-'+cur_date));
+  var court_date = new Date($('#court_date').val());
   console.log(court_date);
   if(court_date == 'Invalid Date') { court_date = new Date(); }
   var servDate = court_date.getDate();

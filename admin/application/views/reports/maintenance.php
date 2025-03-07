@@ -33,16 +33,18 @@
                                         <th><input type="text" class="column-search form-control" placeholder="Search"></th>
                                         <th><input type="text" class="column-search form-control" placeholder="Search"></th>
                                         <th><input type="text" class="column-search form-control" placeholder="Search"></th>
+                                        <th><input type="text" class="column-search form-control" placeholder="Search"></th>
                                         <th></th>
                                     </tr>
                                     <tr class="text-center">
                                         <th width="3%">S.No</th>
-                                        <th>Maintenance ID</th>
-                                        <th>Court</th>
-                                        <th>Block Date</th>
-                                        <th>Blocked Date</th>
-                                        <th>Blocked Time</th>
-                                        <th>Action</th>
+                                        <th width="14%">Entry Date</th>
+                                        <th width="13%">Maintenance Date</th>
+                                        <th>Maintenance Time</th>
+                                        <th width="12%">Maintenance ID</th>
+                                        <th width="13%">Court</th>
+                                        <th width="13%">Reason</th>
+                                        <th width="8%">Action</th>
                                     </tr>
                                     
                                 </thead>
@@ -136,11 +138,12 @@ $(document).ready(function() {
         },
         "columns": [
             { "data": "fld_aid" },
-            { "data": "fld_appointid", "className": "style-column"},
-            { "data": "fld_aserv" },
             { "data": "fld_booked_date"},
             { "data": "fld_adate"},
             { "data": "fld_atime", "className": "style-column"},
+            { "data": "fld_appointid", "className": "style-column"},
+            { "data": "fld_aserv" },
+            { "data": "fld_areason" },
             { "data": "action" },
         ],
         "order": [[0, "desc"]],

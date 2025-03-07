@@ -1,3 +1,10 @@
+<?php 
+
+    $cmpy_time = $cmpy_info['fld_hours'];
+    $cmpy_time = explode(" - ", $cmpy_time);
+    $start_time = $cmpy_time[0];
+    $end_time = str_replace(['00'], '30', $cmpy_time[1]);
+?>
 <!----------------- Model form for add new / edit category ------------------->
 <div class="modal fade" id="maintain_modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="MaintainModalLabel"
     aria-hidden="true">
@@ -15,8 +22,8 @@
                         <div class="col-md-6">
                             <label for="fld_cpname" class="form-label">Court <span class="text-danger">*</span> </label>
                             <select class="form-select" name="mnt_court" id="mnt_court">
-                                <option value="courtA">Court A</option>
-                                <option value="courtB">Court B</option>
+                                <option value="courtA" <?= ((isset($edit_maintenance[0]['fld_aserv']) && $edit_maintenance[0]['fld_aserv'] == "courtA" ) ? 'Selected' : ''); ?> >Court A</option>
+                                <option value="courtB" <?= ((isset($edit_maintenance[0]['fld_aserv']) && $edit_maintenance[0]['fld_aserv'] == "courtB" ) ? 'Selected' : ''); ?> >Court B</option>
                             </select>
                             <span class="maintaincourt-error-msg text-danger"></span>
                         </div>
@@ -29,13 +36,13 @@
 
                         <div class="col-md-6 mt-3">
                             <label class="form-label fs-14">From Time <span class="text-danger">*</span></label>
-                            <input type="text" name="mnt_frm_time" class="form-control timerange" id="mnt_frm_time" value="<?= (isset($startTime) ? $startTime : ''); ?>">
+                            <input type="text" name="mnt_frm_time" class="form-control timerange" min="" id="mnt_frm_time" value="<?= (isset($startTime) ? $startTime : ''); ?>">
                             <span class="maintainfrm_time-error-msg text-danger"></span>
                         </div>
 
                         <div class="col-md-6 mt-3">
                             <label class="form-label fs-14">End Time <span class="text-danger">*</span></label>
-                            <input type="text" name="mnt_end_time" class="form-control timerange" id="mnt_end_time" value="<?= (isset($last_time) ? $last_time : ''); ?>">
+                            <input type="text" name="mnt_end_time" class="form-control timerange" id="mnt_end_time" value="<?= (isset($last_time) ? TimeDuration($last_time, 30) : ''); ?>">
                             <span class="maintainfrm_end-error-msg text-danger"></span>
                         </div>
 
@@ -48,7 +55,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" onclick="closeModel('view_maintenance')" data-bs-dismiss="modal">Close</button>
                     <button type="submit" class="btn btn-success">Save</button>
-                    <input type="hidden" name="maintain_id" value="<?= (isset($edit_maintenance[0]['fld_aid']) ? md5($edit_maintenance[0]['fld_aid']) : ''); ?>">
+                    <input type="hidden" name="maintain_id" value="<?= (isset($edit_maintenance[0]['fld_aid']) ? $edit_maintenance[0]['fld_aid'] : ''); ?>">
                     <input type="hidden" name="<?= $this->security->get_csrf_token_name();?>" value="<?= $this->security->get_csrf_hash();?>">
                 </div>
             </div>
@@ -92,53 +99,80 @@ $(document).ready(function() {
        });
     });
 
-});
-
-
-document.addEventListener("DOMContentLoaded", function() {
-        flatpickr("#mnt_frm_time", {
-            enableTime: true,
-            noCalendar: true,
-            dateFormat: "h:i K",
-            time_24hr: false,
-            minuteIncrement: 30
-        });
-    });
-
-    document.addEventListener("DOMContentLoaded", function() {
-        flatpickr("#mnt_end_time", {
-            enableTime: true,
-            noCalendar: true,
-            dateFormat: "h:i K",
-            time_24hr: false,
-            minuteIncrement: 30
-        });
-    });
-
-    $(document).ready(function() {
-        let selectedDate = null; 
-
-        $("#mnt_date").flatpickr({
-            dateFormat: "d-m-Y",
-            minDate: "today", 
-            maxDate: new Date().fp_incr(30),
-            onChange: function(selectedDates, dateStr, instance) {
-                selectedDate = dateStr; 
-                disableSelectedDate();
+    $("#mnt_date").flatpickr({
+        dateFormat: "d/m/Y",
+        minDate: new Date(), 
+        maxDate: new Date().fp_incr(30),
+        defaultDate: new Date(),
+        onChange: function(selectedDates, dateStr, instance) {
+            selectedDate = selectedDates; 
+            if(selectedDates[0] != undefined && selectedDates[0].toLocaleDateString('en-GB') == dateStr) {
+                $('.flatpickr-day').removeClass('today');
             }
-        });
-
-        function disableSelectedDate() {
-            $("#mnt_date").flatpickr({
-                dateFormat: "d-m-Y",
-                minDate: "today", 
-                maxDate: new Date().fp_incr(30),
-                disable: selectedDate ? [selectedDate] : [], 
-                onChange: function(selectedDates, dateStr, instance) {
-                    selectedDate = dateStr; 
-                    disableSelectedDate(); 
-                }
-            });
         }
     });
+
+    $('#mnt_frm_time').flatpickr({
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "h:i K",
+        time_24hr: false,
+        allowInput: true,
+        minuteIncrement: 30,
+        onChange: function(selectedDates, dateStr, instance) {
+            var sel_date = $("#mnt_date").val();
+            var sel_date = sel_date.split("/");
+            var today = new Date();
+            if(sel_date != "") {
+                today = new Date(sel_date[1]+'/'+sel_date[0]+'/'+sel_date[2]);
+            }
+            const selectedDate = selectedDates[0];
+            if (selectedDate && selectedDate.toDateString() !== today.toDateString()) {
+                instance.config.minTime = "<?= $start_time; ?>";
+                instance.config.maxTime = "<?= $end_time ?>";
+            } else {
+                const now = new Date();
+                const minutes = now.getMinutes();
+                const nextHalfHour = Math.ceil(minutes / 30) * 30;
+                now.setMinutes(nextHalfHour, 0, 0);
+                instance.config.minTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                instance.config.maxTime = "<?= $end_time ?>";
+            }
+            instance.set('minTime', instance.config.minTime);
+            instance.set('maxTime', instance.config.maxTime);
+        }
+    });
+
+    $('#mnt_end_time').flatpickr({
+        enableTime: true,
+        noCalendar: true,
+        dateFormat: "h:i K",
+        time_24hr: false,
+        minuteIncrement: 30,
+        onChange: function(selectedDates, dateStr, instance) {
+            var sel_date = $("#mnt_date").val();
+            var sel_date = sel_date.split("/");
+            var today = new Date();
+            if(sel_date != "") {
+                today = new Date(sel_date[1]+'/'+sel_date[0]+'/'+sel_date[2]);
+            }
+            const selectedDate = selectedDates[0];
+            if (selectedDate && selectedDate.toDateString() !== today.toDateString()) {
+                instance.config.minTime = "<?= $start_time; ?>";
+                instance.config.maxTime = "<?= $end_time ?>";
+            } else {
+                const now = new Date();
+                const minutes = now.getMinutes();
+                const nextHalfHour = Math.ceil(minutes / 30) * 30;
+                now.setMinutes(nextHalfHour, 0, 0);
+                instance.config.minTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                instance.config.maxTime = "<?= $end_time ?>";
+            }
+            instance.set('minTime', instance.config.minTime);
+            instance.set('maxTime', instance.config.maxTime);
+        }
+    });
+
+});
+
 </script>
