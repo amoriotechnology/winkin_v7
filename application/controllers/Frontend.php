@@ -359,7 +359,7 @@ class Frontend extends CI_Controller {
                     $isChecked = ($apptime == $looptime) || ($prevtime == $looptime);
 
                     $bgColor = ($blockid == "Maintenance") ? 'bg-orange' : '';
-                    $response .= '<td class="tooltip-text rounded text-center '.(($isChecked) ? 'btn-success strike-out' : ($isDisabled ? 'cal-disabled' : 'btn-outline-success')).' time-btn'.$k.' '.$classtime.' '.$bgColor.'" style="cursor: pointer;" data-time="'.$prev_class.'" onclick="getTimeRate(\''.showTime($looptime).'\', 30)"  data-next="'.$next_class.'">
+                    $response .= '<td class="text-center '.(($isChecked) ? 'btn-success strike-out' : ($isDisabled ? 'cal-disabled' : 'btn-outline-success')).' time-btn'.$k.' '.$classtime.' '.$bgColor.'" style="cursor: pointer;" data-time="'.$prev_class.'" onclick="getTimeRate(\''.showTime($looptime).'\', 30)"  data-next="'.$next_class.'">
                         <label class="text-dark '.($isDisabled ? 'strike-out' : '').'">
                           <div class="align-items-center text-dark">
                             <div class="input-group">
@@ -407,17 +407,10 @@ class Frontend extends CI_Controller {
     
     /* customer detail */
     $custname   = trim($this->input->post('cust_name', TRUE));
-    $custlname  = trim($this->input->post('cust_lname', TRUE));
     $custphone  = trim($this->input->post('cust_phone', TRUE));
-    $altcustphone   = trim($this->input->post('alt_cust_phone', TRUE));
     $custemail  = trim($this->input->post('cust_email', TRUE));
     $custpwd    = $this->encryption->encrypt(trim($this->input->post('cust_pwd', TRUE)));
     $custdob    = trim($this->input->post('cust_dob', TRUE));
-    $custgender = trim($this->input->post('cust_gender', TRUE));
-    $mari_sts   = trim($this->input->post('mari_sts', TRUE));
-    $anni_date  = trim($this->input->post('anni_date', TRUE));
-    $custaddr   = trim($this->input->post('cust_addr', TRUE));
-    $custpref   = trim($this->input->post('cust_pref', TRUE));
 
     /* sign-in detail */
     $signin_phone = (!empty($this->input->post('signin_phone', TRUE))) ? trim($this->input->post('signin_phone', TRUE)) : (!empty($info['cust_phone']) ? $info['cust_phone'] : $custphone);
@@ -446,18 +439,24 @@ class Frontend extends CI_Controller {
 
     $history = $paymode;
 
+    /* Check already have the slot, date, time */
+    $bookedtime = '';
+    for($b = 0; $b < count($timings); $b++) {
+      $bookedtime .= "'".$timings[$b]."', ";
+    }
+
+    $prev_booking = $this->Common_model->GetJoinDatas('appointments A', 'appointment_meta AM', 'A.fld_aid = AM.fld_amappid', "`fld_adate`", "`fld_amstaff_time` IN ('".trim($bookedtime, ", '")."') AND `fld_adate` = '".$court_date."' AND `fld_aserv` = '".$court."' AND `fld_astatus` != 'Cancelled'");
+    if(!empty($prev_booking)) {
+      echo json_encode(['status' => 300, 'alert_msg' => 'Sorry, but this slot is already booked!']);
+      exit;
+    }
+
     if (!empty($appid)) {
 
       $this->Common_model->UpdateData('customers', [
         'fld_name' => $custname,
-        'fld_lastname' => $custlname,
         'fld_email' => $custemail,
-        'fld_gender' => $custgender,
         'fld_dob' => struDate($custdob),
-        'fld_maritial_sts' => $mari_sts,
-        'fld_anniversary' => struDate($anni_date),
-        'fld_address' => $custaddr,
-        'fld_notes' => $custpref,
       ], ["fld_phone" => $custphone]);
 
       $cust_lastid = $this->input->post('cust_id', TRUE);
@@ -512,18 +511,6 @@ class Frontend extends CI_Controller {
       $this->Common_model->UpdateData('payments', ['fld_prate' => $rate, 'fld_ppaid' => ($amount + $gst_amount + $payment_amount), 'fld_pbalance' => 0, 'fld_phistory' => json_encode($history)], ['fld_appid' => $appid]);
 
     } else {
-      
-      /* Check already have the slot, date, time */
-      $bookedtime = '';
-      for($b = 0; $b < count($timings); $b++) {
-        $bookedtime .= "'".$timings[$b]."', ";
-      }
-
-      $prev_booking = $this->Common_model->GetJoinDatas('appointments A', 'appointment_meta AM', 'A.fld_aid = AM.fld_amappid', "`fld_adate`", "`fld_amstaff_time` IN ('".trim($bookedtime, ", '")."') AND `fld_adate` = '".$court_date."' AND `fld_aserv` = '".$court."' AND `fld_astatus` != 'Cancelled'");
-      if(!empty($prev_booking)) {
-        echo json_encode(['status' => 300, 'alert_msg' => 'Sorry, but this slot is already booked!']);
-        exit;
-      }
 
       /* Fresh entry */
       $checkphone = (!empty($signin_phone)) ? $signin_phone : $custphone;
@@ -546,17 +533,10 @@ class Frontend extends CI_Controller {
         $cust_lastid = $this->Common_model->InsertData('customers', [
           'fld_custid' => $CustID,
           'fld_name' => $custname,
-          'fld_lastname' => $custlname,
           'fld_phone' => $custphone,
-          'fld_alternatephone' => $altcustphone,
           'fld_email' => $custemail,
           'fld_pass' => $custpwd,
-          'fld_gender' => $custgender,
           'fld_dob' => struDate($custdob),
-          'fld_maritial_sts' => $mari_sts,
-          'fld_anniversary' => struDate($anni_date),
-          'fld_address' => $custaddr,
-          'fld_notes' => $custpref,
           'fld_otp' => $cotp,
         ]);
 

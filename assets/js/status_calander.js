@@ -112,7 +112,7 @@ function generateCalendarDays(currentDate) {
 
   var court_date = new Date($('#court_date').val());
   var appkey = $("#appoint_id").val();
-  if(appkey == "") {
+  if(appkey != "") {
     var cur_year = currentDate.getFullYear();
     var cur_month = (currentDate.getMonth() + 1);
     var cur_date = currentDate.getDate();

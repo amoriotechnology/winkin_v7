@@ -145,7 +145,11 @@ class Reports extends CI_Controller {
 
         foreach ($items as $item) {
             $app_start_time = json_decode($item['fld_atime']);
-            
+            $curtime = date('h:i A');
+            $playing = (strtotime($app_start_time[0]) <= strtotime($curtime) && strtotime(TimeDuration($app_start_time[0], $item['fld_aduring'])) >= strtotime($curtime) );
+            $completed = (strtotime(TimeDuration($app_start_time[0], $item['fld_aduring'])) <= strtotime($curtime));
+            $rescheduled = (strtotime($app_start_time[0]) > strtotime($curtime));
+
             $action = '<div class="dropdown ms-2">
                         <button class="btn btn-icon btn-light btn-sm btn-wave waves-secondary waves-effect" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="ti ti-dots-vertical"></i>
@@ -160,15 +164,15 @@ class Reports extends CI_Controller {
             }
 
             // Conditional logic for the "Reschedule" button
-            if (strtotime(CURDATE) <= strtotime($item['fld_adate']) && ($item['fld_astatus'] == "Confirmed"  ||  $item['fld_astatus'] == "Confirmed")) {
+            if (strtotime(CURDATE) <= strtotime($item['fld_adate']) && $rescheduled && ($item['fld_astatus'] == "Confirmed"  ||  $item['fld_astatus'] == "Confirmed")) {
                 $action .= '<li><a class="dropdown-item" href="' . base_url('viewcourt_status/' . md5($item['fld_appointid'])) . '">Reschedule</a></li>';
             }
 
-            if (strtotime(CURDATE) >= strtotime($item['fld_adate']) && $item['fld_astatus'] == "Confirmed") {
+            if (strtotime(CURDATE) >= strtotime($item['fld_adate']) && $item['fld_astatus'] == "Confirmed" && $playing) {
                 $action .= '<li> <a class="dropdown-item update_booking" data-id="' . md5($item['fld_appointid']) . '" data-status="Playing" >Playing...</a> </li>';
             }
 
-            if (strtotime(CURDATE) >= strtotime($item['fld_adate']) && $item['fld_astatus'] != "Cancelled" && $item['fld_astatus'] != "Completed" && $item['fld_astatus'] != "Pending") {
+            if (strtotime(CURDATE) >= strtotime($item['fld_adate']) && $completed && $item['fld_astatus'] != "Cancelled" && $item['fld_astatus'] != "Completed" && $item['fld_astatus'] != "Pending") {
                 $action .= '<li> <a class="dropdown-item update_booking" data-id="' . md5($item['fld_appointid']) . '" data-status="Completed" >Completed.</a> </li>';
             }
 
@@ -346,7 +350,7 @@ class Reports extends CI_Controller {
         $table1cond = '`A`.`fld_acustid` = `C`.`fld_id`';
         $table2cond = '`P`.`fld_appid` = `A`.`fld_aid`';
         $select     = "A.*, C.*, P.*";
-        $items = $this->Common_model->getRevenue($table1, $table2, $table3, $table1cond, $table2cond, $select, $orderField . ' ' . $orderDirection, $limit, $start, $search, $where);
+        $items = $this->Common_model->getRevenue($table1, $table2, $table3, $table1cond, $table2cond, $select, $orderField . ' ' . $orderDirection, $limit, $start, $search, $where, ["A.fld_astatus" => ['Pending', 'Cancelled']]);
         $data = [];
         $i    = (float) $start + 1;
         foreach ($items as $item) {
@@ -699,25 +703,28 @@ class Reports extends CI_Controller {
                 if (! empty($searchValue)) {
                     switch ($columnIndex) {
                     case 1:
-                        $col_where["fld_appointid LIKE"] = "%$searchValue%";
-                        break;
-                    case 2:
-                        $col_where["fld_aserv LIKE"] = "%$searchValue%";
-                        break;
-                    case 3:
                         $col_where["DATE_FORMAT(fld_booked_date, '%d/%m/%Y') LIKE"] = "%$searchValue%";
                         break;
-                    case 4:
+                    case 2:
                         $col_where["DATE_FORMAT(fld_adate, '%d/%m/%Y') LIKE"] = "%$searchValue%";
                         break;
-                    case 5:
-                        if (strpos($searchValue, '-') !== false) {
-                            list($startTime, $endTime) = explode(" - ", $searchValue); 
-                            $col_where["fld_atime LIKE"] = "%$startTime%";
-                        } else {
-                            $col_where["fld_atime LIKE"] = "%$searchValue%";
-                        }
+                    case 3:
+                            if (strpos($searchValue, '-') !== false) {
+                                list($startTime, $endTime) = explode(" - ", $searchValue); 
+                                $col_where["fld_atime LIKE"] = "%$startTime%";
+                            } else {
+                                $col_where["fld_atime LIKE"] = "%$searchValue%";
+                            }
+                            break;
+                    case 4:
+                        $col_where["fld_appointid LIKE"] = "%$searchValue%";
                         break;
+                    case 5:
+                        $col_where["fld_aserv LIKE"] = "%$searchValue%";
+                        break; 
+                    case 6:
+                        $col_where["fld_areason LIKE"] = "%$searchValue%";
+                        break;                    
                     }
                 }
             }
@@ -746,11 +753,12 @@ class Reports extends CI_Controller {
                         </div>';
             $data[] = [
                 "fld_aid"         => $i,
-                "fld_appointid"   => $item['fld_appointid'],
-                "fld_aserv"       => $courtname,
-                "fld_booked_date" => date('m/d/Y', strtotime($item['fld_booked_date'])),
+                "fld_booked_date" => date('d/m/Y', strtotime($item['fld_booked_date'])),
                 "fld_adate"       => showDate($item['fld_adate']),
                 "fld_atime"       => $app_start_time[0].' - '.$formatted_time,
+                "fld_appointid"   => $item['fld_appointid'],
+                "fld_areason"   => $item['fld_areason'],
+                "fld_aserv"       => $courtname,
                 'action'          => $action,
             ];
             $i++;

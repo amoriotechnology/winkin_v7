@@ -362,12 +362,14 @@ class Backend extends CI_Controller {
 	public function add_maintenance()
     {
         $mnt_court     = trim($this->input->post('mnt_court', TRUE));
-        $mnt_date      = date('Y-m-d', strtotime($this->input->post('mnt_date', TRUE)));
+        $mnt_date      = struDate($this->input->post('mnt_date', TRUE));
         $mnt_frm_time  = trim($this->input->post('mnt_frm_time', TRUE));
         $mnt_end_time  = trim($this->input->post('mnt_end_time', TRUE));
         $mnt_reason    = trim($this->input->post('mnt_reason', TRUE));
-        $maintain_id      = $this->input->post('maintain_id', TRUE);
+
+        $maintain_id   = $this->input->post('maintain_id', TRUE);
         $getAdminId    = $this->session->userdata('login_info');
+
         $startTime = new DateTime($mnt_frm_time);
         $endTime   = new DateTime($mnt_end_time);
         // Start time is greater than End time Condition
@@ -376,7 +378,7 @@ class Backend extends CI_Controller {
                 'status' => 400,
                 'alert_msg' => 'Start time must be earlier than end time.'
             ]);
-            return;
+            exit;
         }
         // Start Time and End time is equal Condition
         if ($startTime == $endTime) {
@@ -384,23 +386,47 @@ class Backend extends CI_Controller {
                 'status' => 400,
                 'alert_msg' => 'Start time and end time cannot be the same.'
             ]);
-            return;
+            exit;
         }
         $interval  = new DateInterval('PT30M');
         $timeSlots = [];
+        $endTime->modify('-30 minutes');
         while ($startTime <= $endTime) {
             $timeSlots[] = $startTime->format('h:i A');
             $startTime->add($interval);
         }
-        $conflict = $this->Common_model->isTimeSlotBooked($mnt_court, $mnt_date, $timeSlots);
-        if ($conflict) {
+
+        if(!empty($maintain_id)) {
+            /* Deleted the previous maintenance slot based on maintenance id for checking selected time slot have free or not */
+            $this->Common_model->DeleteData('appointment_meta', ['fld_amappid' => $maintain_id]);
+        }
+        $bookedtime = implode("', '", $timeSlots);
+        $conflict = $this->Common_model->GetJoinDatas('appointments A', 'appointment_meta AM', 'A.fld_aid = AM.fld_amappid', "`fld_adate`", "`fld_amstaff_time` IN ('".trim($bookedtime, ", '")."') AND `fld_adate` = '".$mnt_date."' AND `fld_aserv` = '".$mnt_court."' AND `fld_astatus` != 'Cancelled'");
+        if (!empty($conflict)) {
+            /* If the selected time have booked slots then insert the deleted maintenance slots again with the same maintenance id */
+            $prev_time = $this->Common_model->GetDatas('appointments', 'fld_atime', ['fld_aid' => $maintain_id]);
+            if(!empty($maintain_id)) {
+                $meta_data = [];
+                foreach (json_decode($prev_time[0]['fld_atime']) as $time) {
+                    $meta_data[] = [
+                        'fld_amappid'      => $maintain_id,
+                        'fld_amstaff_time' => $time,
+                        'fld_amserv_name'  => $mnt_court,
+                        'fld_amserv_dura'  => 30,
+                        'fld_amserv_rate'  => '0.00',
+                        'fld_amstatus'     => 'Active',
+                    ];
+                }
+                $result = $this->Common_model->InsertBatchData('appointment_meta', $meta_data);
+            }
+
             echo json_encode([
                 'status' => 400,
                 'alert_msg' => 'Selected time slot is already booked. Please choose another time.'
             ]);
-            return;
+            exit;
         }
-        $totalMinutes = count($timeSlots) * 30;
+        $totalMinutes = ((count($timeSlots) * 30));
         $values = [
             'fld_aserv'  => $mnt_court,
             'fld_adate'  => $mnt_date,
@@ -410,15 +436,27 @@ class Backend extends CI_Controller {
             'fld_areason' => $mnt_reason,
             'fld_atype'  => 'Maintenance'
         ];
+
         if (!empty($maintain_id)) {
-            $result = $this->Common_model->UpdateData('appointments', $values, ['md5(`fld_aid`)' => $maintain_id]);
+            $result = $this->Common_model->UpdateData('appointments', $values, ['fld_aid' => $maintain_id]);
+            $meta_data = [];
+            foreach ($timeSlots as $time) {
+                $meta_data[] = [
+                    'fld_amappid'      => $maintain_id,
+                    'fld_amstaff_time' => $time,
+                    'fld_amserv_name'  => $mnt_court,
+                    'fld_amserv_dura'  => 30,
+                    'fld_amserv_rate'  => '0.00',
+                    'fld_amstatus'     => 'Active',
+                ];
+            }
+            $result = $this->Common_model->InsertBatchData('appointment_meta', $meta_data);
             logEntry('Update Maintenance', 'Court Maintenance', 'Court Maintenance Update successfully', 'Update', '');
         } else {
             $prev_id = $this->Common_model->PaginationData('appointments', 'fld_appointid', ['fld_atype' => 'Maintenance'], "`fld_aid` DESC", 1, 0);
             $maintain_id = 'WM1000';
             if (!empty($prev_id) && isset($prev_id[0]['fld_appointid'])) {
-                $prev_num = (int) substr($prev_id[0]['fld_appointid'], 2);
-                $maintain_id = 'WM' . str_pad($prev_num + 1, 4, '0', STR_PAD_LEFT);
+                $maintain_id = 'WB'.((float)substr($prev_id[0]['fld_appointid'], 2) + 1);
             }
             $values['fld_appointid'] = $maintain_id;
             $app_lastid  = $this->Common_model->InsertData('appointments', $values);
@@ -438,9 +476,7 @@ class Backend extends CI_Controller {
             }
             logEntry('Add Maintenance', 'Court Maintenance', 'Court Maintenance Added successfully', 'Add', '');
         }
-        $response = ($result > 0)
-            ? ['status' => 200, 'alert_msg' => alertMsg('add_suc')]
-            : ['status' => 401, 'alert_msg' => alertMsg('add_fail')];
+        $response = ($result > 0) ? ['status' => 200, 'alert_msg' => alertMsg('add_suc')] : ['status' => 401, 'alert_msg' => alertMsg('add_fail')];
         echo json_encode($response);
     }
 
@@ -590,20 +626,21 @@ class Backend extends CI_Controller {
 		$cotp 		= $this->input->post('cotp', TRUE);
 
 		$history = $paymode;
+        /* Check already have the slot, date, time */
+        $bookedtime = '';
+        for($b = 0; $b < count($timings); $b++) {
+            $bookedtime .= "'".$timings[$b]."', ";
+        }
+    
+        $prev_booking = $this->Common_model->GetJoinDatas('appointments A', 'appointment_meta AM', 'A.fld_aid = AM.fld_amappid', "`fld_adate`", "`fld_amstaff_time` IN ('".trim($bookedtime, ", '")."') AND `fld_adate` = '".$court_date."' AND `fld_aserv` = '".$admincourt."' AND `fld_astatus` != 'Cancelled'");
+        if(!empty($prev_booking)) {
+            echo json_encode(['status' => 300, 'alert_msg' => 'Sorry, but this slot is already booked!']);
+            exit;
+        }
+
 		if (!empty($appid)) {
 
 			$AppointID = $this->input->post('appoint_id');
-			/* Check already have the slot, date, time */
-			$bookedtime = '';
-			for($b = 0; $b < count($timings); $b++) {
-			  $bookedtime .= "'".$timings[$b]."', ";
-			}
-	  
-			$prev_booking = $this->Common_model->GetJoinDatas('appointments A', 'appointment_meta AM', 'A.fld_aid = AM.fld_amappid', "`fld_adate`", "`fld_amstaff_time` IN ('".trim($bookedtime, ", '")."') AND `fld_adate` = '".$court_date."' AND `fld_aserv` = '".$admincourt."' AND `fld_astatus` != 'Cancelled'");
-			if(!empty($prev_booking)) {
-			  echo json_encode(['status' => 300, 'alert_msg' => 'Sorry, but this slot is already booked!']);
-			  exit;
-			}
 			
             $check = ExistorNot('customers', ['fld_phone' => $custphone]);
 			$cust_rec = $this->Common_model->GetDatas('customers', 'fld_id, fld_custid', ['fld_id !=' => ''], "`fld_id` DESC");
@@ -676,18 +713,6 @@ class Backend extends CI_Controller {
 			$this->Common_model->UpdateData('appointments', ['fld_conf_email' => $mail], ['fld_aid' => $appid]);
 		    
 		} else {
-
-			/* Check already have the slot, date, time */
-			$bookedtime = '';
-			for($b = 0; $b < count($timings); $b++) {
-			  $bookedtime .= "'".$timings[$b]."', ";
-			}
-	  
-			$prev_booking = $this->Common_model->GetJoinDatas('appointments A', 'appointment_meta AM', 'A.fld_aid = AM.fld_amappid', "`fld_adate`", "`fld_amstaff_time` IN ('".trim($bookedtime, ", '")."') AND `fld_adate` = '".$court_date."' AND `fld_aserv` = '".$admincourt."' AND `fld_astatus` != 'Cancelled'");
-			if(!empty($prev_booking)) {
-			  echo json_encode(['status' => 300, 'alert_msg' => 'Sorry, but this slot is already booked!']);
-			  exit;
-			}
 
 			$check = ExistorNot('customers', ['fld_phone' => $custphone]);
 			$cust_rec = $this->Common_model->GetDatas('customers', 'fld_id, fld_custid', ['fld_id !=' => ''], "`fld_id` DESC");
@@ -1118,18 +1143,18 @@ class Backend extends CI_Controller {
                         $isChecked  = ($apptime == $looptime) || ($prevtime == $looptime);
                         $bgColor    = ($blockid == "Maintenance") ? 'bg-orange' : '';
 
-                        $response .= '<td class="rounded text-center ' . (($isChecked) ? (($blockstatus == "Pending") ? 'btn-info strike-out' : 'btn-success strike-out') : ($isDisabled ? 'cal-disabled' : 'btn-outline-success')) . ' time-btn' . $k . ' ' . $classtime . ' ' . $bgColor . '" style="cursor: pointer;" data-time="' . $prev_class . '" onclick="getTimeRate(\'' . showTime($looptime) . '\', 30)"  data-next="' . $next_class . '">
-                        <label class="text-dark ' . (($isDisabled) ? 'strike-out' : '') . '">
+                        $response .= '<td class="text-center ' . (($isChecked) ? (($blockstatus == "Pending") ? 'btn-info strike-out' : 'btn-success strike-out') : ($isDisabled ? 'cal-disabled' : 'btn-outline-success')) . ' time-btn' . $k . ' ' . $classtime . ' ' . $bgColor . '" style="cursor: pointer;" data-time="' . $prev_class . '" onclick="getTimeRate(\'' . showTime($looptime) . '\', 30)"  data-next="' . $next_class . '">
+                        <label class="text-dark ">
                           <div class="align-items-center text-dark">
                           <input type="hidden" class="existing_slot" value="' . $scheduleCount . '">
                              <div class="input-group">
-                              <small><b> ' . showTime($looptime) . '</b><br>';
+                              <small><b class="' . (($isDisabled) ? 'strike-out' : '') . '"> ' . showTime($looptime) . '</b><br>';
 
                         if ($blockid == "Maintenance") {
                             $response .= '<span class="text-white">' . $blockid . '</span></small>';
                         } else {
                             if ($prev_bid != $blockid) {
-                                $response .= '<a class="text-decoration-underline text-white" style="cursor: pointer;" onclick="getCustomerDetails(\'' . $blockid . '\')" title="View" alt="View">' . $blockid . '</a>';
+                                $response .= '<a class="text-white" style="cursor: pointer;" onclick="getCustomerDetails(\'' . $blockid . '\')" title="View" alt="View">' . $blockid . '</a>';
                                 $w++;
                             } 
                               
