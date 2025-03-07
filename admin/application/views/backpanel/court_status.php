@@ -198,7 +198,7 @@ if(!empty($edit_appoint)) {
                                                     </div>
                                                     <div class="calendar-month-year"></div>
                                                     <div class="calendar-arrow-container">
-                                                      <button type="button" class="calendar-today-button"></button>
+                                                      <button type="button" class="d-none calendar-today-button"></button>
                                                       <button type="button" class="calendar-left-arrow"> <i class="bi bi-caret-left-fill"></i> </button>
                                                       <button type="button" class="calendar-right-arrow"> <i class="bi bi-caret-right-fill"></i> </button>
                                                     </div>
